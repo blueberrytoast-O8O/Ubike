@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>橘燈站點 - 快沒車借</title>
+    <style>
+        /* 基礎設定 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* 導覽列 */
+        nav {
+            background-color: #1a2a47;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 5px 15px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #f0ad4e;
+        }
+
+
+        /* 深色按鈕操作區 */
+        .button-section {
+            background-color: #0d1b31;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f4f7f9;
+        }
+
+        /* 導覽列 */
+        nav {
+            background-color: #1a2a47;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+        .nav-links a:hover { color: #f0ad4e; }
+
+        /* 內容區 */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #1a2a47;
+            border-left: 5px solid #2980b9;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background-color: #0d1b31;
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        tr:hover { background-color: #f9f9f9; }
+
+        /* 燈號標籤樣式 */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .status-green { background-color: #e8f5e9; color: #27ae60; }  /* 安全 */
+        .status-red { background-color: #fce4e4; color: #c0392b; }    /* 過多 */
+        .status-orange { background-color: #fff3e0; color: #e67e22; } /* 快沒車 */
+        .status-gray { background-color: #e1e1e1; color: #000000; } /* 默認 */
+
+
+        /* 讓標題與選單水平排列並靠兩側 */
+        .table-header {
+            display: flex;
+            justify-content: space-between; /* 關鍵：讓子元素分開靠左右 */
+            align-items: center;            /* 垂直置中 */
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* 標題樣式調整 */
+        .table-header h2 {
+            margin: 0; /* 移除預設邊距避免跑位 */
+            border-left: 5px solid #2980b9;
+            padding-left: 15px;
+        }
+
+        /* 下拉選單外觀調整 */
+        .filter-box label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #1a2a47;
+            margin-right: 8px;
+        }
+
+        #time-predict {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+        }
+
+        #time-predict:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 5px rgba(41, 128, 185, 0.3);
+        }
+
+        /* 當資料變動時的短暫視覺提示 */
+        .st-bikes, .st-empty, .st-status {
+            transition: all 0.5s ease;
+        }
+
+        .visual-placeholder {
+            width: 100%;
+            height: 350px; /* 固定高度讓網頁不會跳來跳去 */
+            background-color: #f0f2f5;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #predict-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 讓圖片填滿區域且不變形 */
+            transition: opacity 0.3s ease-in-out; /* 切換時的小淡入效果 */
+        }
+
+        /* 新增：推薦站點卡片與滑動樣式 */
+        .recommend-card {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .recommend-card h4 {
+            margin: 0 0 8px 0;
+            color: #0d1b31;
+        }
+        .recommend-card p {
+            margin: 5px 0;
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .station-row {
+            cursor: pointer;
+        }
+        .station-row:hover {
+            background-color: #fffaf2; /* 淡淡的橘燈警告感 */
+        }
+
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 導覽列 -->
+    <nav>
+        <div class="logo">Youbike調度預測系統</div>
+        <div class="nav-links">
+            <a href="home.html">首頁</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="table-header">
+            <h2>🟠 橘燈站點：車輛不足 (需補車)</h2>
+            <div class="filter-box">
+                <label for="time-predict">預測時間：</label>
+                <select id="time-predict">
+                    <option value="now">現在</option>
+                    <option value="10min">10分鐘後</option>
+                    <option value="20min">20分鐘後</option>
+                    <option value="30min">30分鐘後</option>
+                    <option value="30min">40分鐘後</option>
+                    <option value="30min">50分鐘後</option>
+                    <option value="60min">1小時後</option>
+                </select>
+            </div>
+        </div>
+
+        <table>
+            <div id="dispatch-panel" style="display: none; margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-left: 5px solid #d35400; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0; color: #2c3e50;">💡 智慧調度補車推薦</h3>
+                <p id="dispatch-current-station" style="font-weight: bold; color: #d35400; margin-bottom: 5px;"></p>
+                <p id="dispatch-desc" style="color: #666; font-size: 0.9rem; margin-top: 5px;"></p>
+                <div id="recommend-list" style="display: flex; gap: 15px; margin-top: 15px;"></div>
+            </div>
+            <thead>
+                <tr>
+                    <th>站點編號</th>
+                    <th>站名</th>
+                    <th>總車位</th>
+                    <th>可借車輛</th>
+                    <th>可歸還位</th>
+                    <th>狀態燈號</th>
+                </tr>
+            </thead>
+            <tbody id="station-table-body">
+                <tr class="station-row"><td>500304001</td><td>中央大學圖書館</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304002</td><td>中壢高中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304003</td><td>中壢火車站(前站)中和路</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304004</td><td>中原大學</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304005</td><td>銀河廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304006</td><td>中壢區公所</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304007</td><td>光明公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304008</td><td>翠堤橋</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304009</td><td>中壢國小</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304010</td><td>莒光公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304011</td><td>中壢火車站(後站)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304012</td><td>中正公園(元化路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304013</td><td>中壢區聯合辦公大樓</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304014</td><td>夢幻公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304015</td><td>內壢自強公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304016</td><td>內壢復興公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304017</td><td>元智大學</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304018</td><td>信義國小</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304019</td><td>莊敬廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304020</td><td>吉林路吉利六街口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304021</td><td>龍岡森林公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304022</td><td>忠孝廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304023</td><td>忠福廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304024</td><td>健行科技大學</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304025</td><td>啟英高中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304026</td><td>內壢文化公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304027</td><td>萬能科技大學</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304028</td><td>環中東永福路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304029</td><td>五權公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304030</td><td>中壢新興公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304031</td><td>桃園市立圖書館內壢分館</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304032</td><td>中央大學依仁堂</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304033</td><td>桃園市立圖書館龍岡分館</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304034</td><td>捷運高鐵桃園站(A18)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304035</td><td>捷運桃園體育園區站(A19)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304036</td><td>捷運環北站(A21)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304037</td><td>青埔國中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304038</td><td>領航公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304039</td><td>仁祥公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304040</td><td>篤行公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304041</td><td>甲蟲公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304042</td><td>中壢中央公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304043</td><td>黎明公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304044</td><td>興仁公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304045</td><td>自立新村(榮安一街)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304046</td><td>晉元路仁德一街口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304047</td><td>龍和公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304048</td><td>紫雲宮</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304049</td><td>常樂公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304050</td><td>金鋒太子</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304051</td><td>華愛兒童公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304052</td><td>過嶺國中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304053</td><td>南方莊園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304054</td><td>南亞技術學院</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304055</td><td>華勛公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304056</td><td>青塘園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304057</td><td>大江購物中心</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304058</td><td>老街溪河川教育中心</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304059</td><td>龍岡圓環</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304060</td><td>內厝社區活動中心</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304061</td><td>龍岡大操場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304062</td><td>普忠路770巷口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304063</td><td>青埔國小</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304064</td><td>公七公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304065</td><td>至善綠園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304066</td><td>中鑄公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304067</td><td>大全聯中壢店</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304068</td><td>龍興國中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304069</td><td>竹風青田</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304070</td><td>龍安里集會所</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304071</td><td>中壢仁德公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304072</td><td>龍慈路後寮一路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304073</td><td>功學社新村</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304074</td><td>六和兒童公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304075</td><td>普忠榮民南路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304076</td><td>龍岡停車場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304077</td><td>莒光公園(環中東路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304078</td><td>環中東實踐路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304079</td><td>新明國中</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304080</td><td>中華路一段文化二路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304081</td><td>過嶺廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304082</td><td>中壢公15公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304083</td><td>新街國小</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304084</td><td>福州橋</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304085</td><td>高鐵桃園站(3號出口)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304086</td><td>老街溪環河步道(環北路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304087</td><td>忠孝黃昏市場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304088</td><td>廣明停車場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304089</td><td>高鐵北青昇二街口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304090</td><td>竹風青庭</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304091</td><td>青埔公10公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304092</td><td>玖都機構</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304093</td><td>天翔社區</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304094</td><td>中壢區殯葬服務中心</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304095</td><td>健行科技大學民設學院</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304096</td><td>老街溪河岸廣場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304097</td><td>中壢藝術館</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304098</td><td>同心公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304099</td><td>捷運老街溪站(A22)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304100</td><td>良茂詠恆</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304101</td><td>置地廣場 桃園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304102</td><td>領航南青溪路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304103</td><td>櫻花緻</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304104</td><td>青昇公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304105</td><td>中正公園(中美路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304106</td><td>萬坪公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304107</td><td>青埔兒十公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304108</td><td>仁美公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304109</td><td>中原文創園區(忠信路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304110</td><td>新街溪河濱公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304111</td><td>中壢一號E棟</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304112</td><td>太子鎮社區</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304113</td><td>清溪兒童公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304114</td><td>中壢火車站(前站)美樂路</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304115</td><td>捷運高鐵桃園站(A18)2號出口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304116</td><td>復興中山路口(中壢)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304117</td><td>青峰青昇路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304118</td><td>普慶公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304119</td><td>陸軍專校(龍東路)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304120</td><td>月眉環保公園(中壢)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304121</td><td>富台國小</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304122</td><td>IKEA桃園店</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304123</td><td>環西路二段300巷口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304125</td><td>置地廣場桃園B區</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304126</td><td>西園南園二路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304127</td><td>中華路二段延平路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304128</td><td>仁和親子公園</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304129</td><td>捷運興南站(A20)</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304130</td><td>桃園會展中心</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304131</td><td>聖德基督學院</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304132</td><td>環中東榮安一街口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304133</td><td>中央西路一段大同路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304134</td><td>龍慈路龍岡路三段281巷口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304135</td><td>中壢分局仁愛派出所</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304136</td><td>中壢火車站(前站)中和路二</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304137</td><td>中壢運動公園1號停車場</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304138</td><td>普忠環中東路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+                <tr class="station-row"><td>500304139</td><td>松江北路定寧路口</td><td class="st-total">-</td><td class="st-bikes">-</td><td class="st-empty">-</td><td class="st-status"><span class="status-badge status-gray">-</span></td></tr>
+            </tbody>
+            
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <script>
+        const mapStations = [
+            { name: "中央大學圖書館", lat: 24.96813, lng: 121.19467 },
+            { name: "中壢高中", lat: 24.96082, lng: 121.21204 },
+            { name: "中壢火車站(前站)中和路", lat: 24.95404, lng: 121.22644 },
+            { name: "中原大學", lat: 24.95794, lng: 121.2402 },
+            { name: "銀河廣場", lat: 24.96172, lng: 121.22424 },
+            { name: "中壢區公所", lat: 24.9657, lng: 121.2247 },
+            { name: "光明公園", lat: 24.96281, lng: 121.21739 },
+            { name: "翠堤橋", lat: 24.95327, lng: 121.21588 },
+            { name: "中壢國小", lat: 24.9541, lng: 121.22035 },
+            { name: "莒光公園", lat: 24.95147, lng: 121.23569 },
+            { name: "中壢火車站(後站)", lat: 24.95235, lng: 121.22433 },
+            { name: "中正公園(元化路)", lat: 24.96042, lng: 121.2273 },
+            { name: "中壢區聯合辦公大樓", lat: 24.96207, lng: 121.23003 },
+            { name: "夢幻公園", lat: 24.962541, lng: 121.261596 },
+            { name: "內壢自強公園", lat: 24.96769, lng: 121.25928 },
+            { name: "內壢復興公園", lat: 24.97363, lng: 121.24811 },
+            { name: "元智大學", lat: 24.97035, lng: 121.26325 },
+            { name: "信義國小", lat: 24.95102, lng: 121.23145 },
+            { name: "莊敬廣場", lat: 24.97185, lng: 121.25726 },
+            { name: "吉林路吉利六街口", lat: 24.9829, lng: 121.25041 },
+            { name: "龍岡森林公園", lat: 24.93397, lng: 121.23592 },
+            { name: "忠孝廣場", lat: 24.97252, lng: 121.25685 },
+            { name: "忠福廣場", lat: 24.971805, lng: 121.227697 },
+            { name: "健行科技大學", lat: 24.94678, lng: 121.22901 },
+            { name: "啟英高中", lat: 24.97561, lng: 121.234553 },
+            { name: "內壢文化公園", lat: 24.97957, lng: 121.2501 },
+            { name: "萬能科技大學", lat: 24.99275, lng: 121.22993 },
+            { name: "環中東永福路口", lat: 24.96203, lng: 121.25517 },
+            { name: "五權公園", lat: 24.958867, lng: 121.204579 },
+            { name: "中壢新興公園", lat: 24.94527, lng: 121.22605 },
+            { name: "桃園市立圖書館內壢分館", lat: 24.97795, lng: 121.25797 },
+            { name: "中央大學依仁堂", lat: 24.96712, lng: 121.19096 },
+            { name: "桃園市立圖書館龍岡分館", lat: 24.93794, lng: 121.25583 },
+            { name: "捷運高鐵桃園站(A18)", lat: 25.01378, lng: 121.21393 },
+            { name: "捷運桃園體育園區站(A19)", lat: 25.00157, lng: 121.20278 },
+            { name: "捷運環北站(A21)", lat: 24.96756, lng: 121.22097 },
+            { name: "青埔國中", lat: 25.01083, lng: 121.2058 },
+            { name: "領航公園", lat: 25.00741, lng: 121.20105 },
+            { name: "仁祥公園", lat: 24.948864, lng: 121.260842 },
+            { name: "篤行公園", lat: 24.958288, lng: 121.26328 },
+            { name: "甲蟲公園", lat: 24.97754, lng: 121.25275 },
+            { name: "中壢中央公園", lat: 24.95666, lng: 121.2262 },
+            { name: "黎明公園", lat: 24.93989, lng: 121.25613 },
+            { name: "興仁公園", lat: 24.96626, lng: 121.26355 },
+            { name: "自立新村(榮安一街)", lat: 24.96543, lng: 121.25338 },
+            { name: "晉元路仁德一街口", lat: 24.950926, lng: 121.261293 },
+            { name: "龍和公園", lat: 24.93422, lng: 121.24481 },
+            { name: "紫雲宮", lat: 24.94485, lng: 121.22283 },
+            { name: "常樂公園", lat: 24.97688, lng: 121.25086 },
+            { name: "金鋒太子", lat: 24.94591, lng: 121.24863 },
+            { name: "華愛兒童公園", lat: 24.952303, lng: 121.259724 },
+            { name: "過嶺國中", lat: 24.9602, lng: 121.17552 },
+            { name: "南方莊園", lat: 24.96728, lng: 121.17791 },
+            { name: "南亞技術學院", lat: 24.93756, lng: 121.25171 },
+            { name: "華勛公園", lat: 24.946622, lng: 121.261741 },
+            { name: "青塘園", lat: 25.00641, lng: 121.20492 },
+            { name: "大江購物中心", lat: 25.00127, lng: 121.22939 },
+            { name: "老街溪河川教育中心", lat: 24.95374, lng: 121.21856 },
+            { name: "龍岡圓環", lat: 24.926002, lng: 121.244046 },
+            { name: "內厝社區活動中心", lat: 24.98932, lng: 121.17943 },
+            { name: "龍岡大操場", lat: 24.930164, lng: 121.239605 },
+            { name: "普忠路770巷口", lat: 24.954231, lng: 121.251253 },
+            { name: "青埔國小", lat: 25.00662, lng: 121.21368 },
+            { name: "公七公園", lat: 25.008599, lng: 121.219904 },
+            { name: "至善綠園", lat: 24.94035, lng: 121.24995 },
+            { name: "中鑄公園", lat: 24.96853, lng: 121.25065 },
+            { name: "大全聯中壢店", lat: 24.95525, lng: 121.23484 },
+            { name: "龍興國中", lat: 24.93784, lng: 121.23638 },
+            { name: "竹風青田", lat: 25.0115, lng: 121.20184 },
+            { name: "龍安里集會所", lat: 24.93149, lng: 121.25766 },
+            { name: "中壢仁德公園", lat: 24.953347, lng: 121.266529 },
+            { name: "龍慈路後寮一路口", lat: 24.941207, lng: 121.245130 },
+            { name: "功學社新村", lat: 24.954173, lng: 121.256291 },
+            { name: "六和兒童公園", lat: 24.96364, lng: 121.22458 },
+            { name: "普忠榮民南路口", lat: 24.949502, lng: 121.256339 },
+            { name: "龍岡停車場", lat: 24.930088, lng: 121.253064 },
+            { name: "莒光公園(環中東路)", lat: 24.94894, lng: 121.23597 },
+            { name: "環中東實踐路口", lat: 24.95368, lng: 121.24334 },
+            { name: "新明國中", lat: 24.95621, lng: 121.21231 },
+            { name: "中華路一段文化二路口", lat: 24.97093, lng: 121.25355 },
+            { name: "過嶺廣場", lat: 24.96035, lng: 121.16451 },
+            { name: "中壢公15公園", lat: 25.00053, lng: 121.2079 },
+            { name: "新街國小", lat: 24.96438, lng: 121.22873 },
+            { name: "福州橋", lat: 24.96830, lng: 121.23478 },
+            { name: "高鐵桃園站(3號出口)", lat: 25.01242, lng: 121.21522 },
+            { name: "老街溪環河步道(環北路)", lat: 24.9661, lng: 121.21933 },
+            { name: "忠孝黃昏市場", lat: 24.98226, lng: 121.25297 },
+            { name: "廣明停車場", lat: 24.95458, lng: 121.21406 },
+            { name: "高鐵北青昇二街口", lat: 25.01804, lng: 121.22033 },
+            { name: "竹風青庭", lat: 25.00604, lng: 121.20138 },
+            { name: "青埔公10公園", lat: 25.0144, lng: 121.20756 },
+            { name: "玖都機構", lat: 25.005, lng: 121.20865 },
+            { name: "天翔社區", lat: 24.946126, lng: 121.258832 },
+            { name: "中壢區殯葬服務中心", lat: 24.976932, lng: 121.227558 },
+            { name: "健行科技大學民設學院", lat: 24.94933, lng: 121.22901 },
+            { name: "老街溪河岸廣場", lat: 24.96027, lng: 121.2191 },
+            { name: "中壢藝術館", lat: 24.95823, lng: 121.22700 },
+            { name: "同心公園", lat: 25.00485, lng: 121.21889 },
+            { name: "捷運老街溪站(A22)", lat: 24.95826, lng: 121.2193 },
+            { name: "良茂詠恆", lat: 25.00643, lng: 121.21642 },
+            { name: "置地廣場 桃園", lat: 25.01696, lng: 121.21273 },
+            { name: "領航南青溪路口", lat: 25.01785, lng: 121.22416 },
+            { name: "櫻花緻", lat: 25.0051, lng: 121.2234 },
+            { name: "青昇公園", lat: 25.01471, lng: 121.22195 },
+            { name: "中正公園(中美路)", lat: 24.95909, lng: 121.22480 },
+            { name: "萬坪公園", lat: 24.93284, lng: 121.24914 },
+            { name: "青埔兒十公園", lat: 25.01086, lng: 121.20911 },
+            { name: "仁美公園", lat: 24.94427, lng: 121.25051 },
+            { name: "中原文創園區(忠信路)", lat: 24.96367, lng: 121.2408 },
+            { name: "新街溪河濱公園", lat: 24.95928, lng: 121.22969 },
+            { name: "中壢一號E棟", lat: 24.93654, lng: 121.25468 },
+            { name: "太子鎮社區", lat: 24.93940, lng: 121.24642 },
+            { name: "清溪兒童公園", lat: 25.00985, lng: 121.2037 },
+            { name: "中壢火車站(前站)美樂路", lat: 24.95294, lng: 121.22408 },
+            { name: "捷運高鐵桃園站(A18)2號出口", lat: 25.01429, lng: 121.21436 },
+            { name: "復興中山路口(中壢)", lat: 24.95599, lng: 121.22462 },
+            { name: "青峰青昇路口", lat: 25.01549, lng: 121.21964 },
+            { name: "普慶公園", lat: 24.94857, lng: 121.24633 },
+            { name: "陸軍專校(龍東路)", lat: 24.93857, lng: 121.25918 },
+            { name: "月眉環保公園(中壢)", lat: 25.01461, lng: 121.18988 },
+            { name: "富台國小", lat: 24.93961, lng: 121.25233 },
+            { name: "IKEA桃園店", lat: 25.01383, lng: 121.21747 },
+            { name: "環西路二段300巷口", lat: 24.96491, lng: 121.21353 },
+            { name: "置地廣場桃園B區", lat: 25.01942, lng: 121.2153 },
+            { name: "西園南園二路口", lat: 24.97174, lng: 121.23433 },
+            { name: "中華路二段延平路口", lat: 24.96323, lng: 121.23326 },
+            { name: "仁和親子公園", lat: 24.95242, lng: 121.26421 },
+            { name: "捷運興南站(A20)", lat: 24.98065, lng: 121.21581 },
+            { name: "桃園會展中心", lat: 25.00397, lng: 121.20105 },
+            { name: "聖德基督學院", lat: 24.98501, lng: 121.22231 },
+            { name: "環中東榮安一街口", lat: 24.96345, lng: 121.25675 },
+            { name: "中央西路一段大同路口", lat: 24.95769, lng: 121.22267 },
+            { name: "龍慈路龍岡路三段281巷口", lat: 24.934961, lng: 121.238412 },
+            { name: "中壢分局仁愛派出所", lat: 24.95367, lng: 121.26129 },
+            { name: "中壢火車站(前站)中和路二", lat: 24.95402, lng: 121.22627 },
+            { name: "中壢運動公園1號停車場", lat: 24.94613, lng: 121.23216 },
+            { name: "普忠環中東路口", lat: 24.95757, lng: 121.24942 },
+            { name: "松江北路定寧路口", lat: 24.99379, lng: 121.24880 }
+        ];
+
+        const geoData = {};
+        mapStations.forEach(station => {
+            geoData[station.name] = { lat: station.lat, lng: station.lng };
+        });
+
+        let globalForecastData = {};
+        let globalCurrentData = {}; 
+
+        // Haversine 公式計算距離
+        function getRealDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371e3; 
+            const phi1 = lat1 * Math.PI / 180;
+            const phi2 = lat2 * Math.PI / 180;
+            const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+            const deltaLambda = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                    Math.cos(phi1) * Math.cos(phi2) *
+                    Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; 
+        }
+
+        function formatDistance(meters) {
+            if (meters >= 1000) return (meters / 1000).toFixed(1) + " 公里"; 
+            return Math.round(meters) + " 公尺"; 
+        }
+
+        // 抓取CSV
+        function fetchAllSystemData() {
+            const timestamp = new Date().getTime(); 
+            const currentDataCsv = 'data/cleaned_weather.csv';   
+            const forecastDataCsv = 'data/youbike_forecast.csv'; 
+
+            Papa.parse(`${currentDataCsv}?t=${timestamp}`, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(currentResults) {
+                    const currentRows = currentResults.data;
+                    globalCurrentData = {}; 
+
+                    currentRows.forEach(row => {
+                        const stationId = String(row['station_id'] || '').trim();
+                        const totalSlots = parseInt(row['total_slots']) || 0;
+                        const bikes = parseInt(row['bikes']) || 0;
+                        const empty = Math.max(0, totalSlots - bikes);
+
+                        if (stationId && stationId !== 'undefined') {
+                            const percent = totalSlots > 0 ? (bikes / totalSlots) * 100 : 0;
+                            let currentLight = 'green';
+                            if (percent > 70) currentLight = 'red';
+                            else if (percent < 30) currentLight = 'orange';
+
+                            globalCurrentData[stationId] = {
+                                total: totalSlots, bikes: bikes, empty: empty,
+                                rate: Math.round(percent) + '%', light: currentLight
+                            };
+                        }
+                    });
+
+                    Papa.parse(`${forecastDataCsv}?t=${timestamp}`, {
+                        download: true, header: true, skipEmptyLines: true,
+                        complete: function(forecastResults) {
+                            const forecastRows = forecastResults.data;
+                            globalForecastData = {}; 
+
+                            forecastRows.forEach(row => {
+                                const stationId = String(row['站點編號'] || '').trim();
+                                if (!globalForecastData[stationId]) globalForecastData[stationId] = [];
+                                globalForecastData[stationId].push({
+                                    bikes: parseInt(row['預測數量']) || 0,
+                                    rate: row['可借率'] || '0%',
+                                    light: row['燈號']
+                                });
+                            });
+                            
+                            const currentTimeSelect = document.getElementById('time-predict').value;
+                            updateOrangeTableWithRealData(currentTimeSelect);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 更新橘燈表格、排序與過濾
+        function updateOrangeTableWithRealData(selectedTime) {
+            const tbody = document.getElementById('station-table-body');
+            const timeIndexMap = { '10min': 0, '20min': 1, '30min': 2, '40min': 3, '50min': 4, '60min': 5 };
+            
+            let rowsArray = Array.from(document.querySelectorAll('.station-row'));
+
+            rowsArray.forEach(row => {
+                const bikesEl = row.querySelector('.st-bikes');
+                const emptyEl = row.querySelector('.st-empty');
+                const statusEl = row.querySelector('.st-status');
+                const totalEl = row.querySelector('.st-total');
+                const rateEl = row.querySelector('.st-rate');
+                const name = row.cells[1].innerText.trim();
+                
+                row.dataset.name = name;
+
+                if (!bikesEl || !emptyEl || !statusEl) return;
+
+                // 一開始強制隱藏
+                row.style.display = 'none';
+
+                let htmlId = row.cells[0].innerText.trim();
+                let matchedKey = htmlId;
+                if (!globalCurrentData[htmlId] && !globalForecastData[htmlId]) {
+                    const allKeys = Object.keys(globalCurrentData).concat(Object.keys(globalForecastData));
+                    const found = allKeys.find(k => htmlId.endsWith(k) || k.endsWith(htmlId));
+                    if (found) matchedKey = found;
+                }
+
+                let newBikes = 0;
+                let totalSlots = parseInt(totalEl ? totalEl.innerText : row.querySelector('.st-total').innerText) || 0;
+                let light = 'green';
+                let percent = 0;
+                let dataFound = false;
+
+                if (selectedTime === 'now') {
+                    const currentData = globalCurrentData[matchedKey];
+                    if (currentData) {
+                        if (totalEl) totalEl.innerText = currentData.total;
+                        totalSlots = currentData.total;
+                        newBikes = currentData.bikes;
+                        light = currentData.light;
+                        percent = totalSlots > 0 ? (newBikes / totalSlots) * 100 : 0;
+                        if (rateEl) rateEl.innerText = currentData.rate;
+                        dataFound = true;
+                    }
+                } else {
+                    const forecastList = globalForecastData[matchedKey];
+                    if (forecastList) {
+                        const forecast = forecastList[timeIndexMap[selectedTime]];
+                        if (forecast) {
+                            newBikes = forecast.bikes;
+                            light = forecast.light;
+                            percent = totalSlots > 0 ? (newBikes / totalSlots) * 100 : 0;
+                            if (rateEl) {
+                                let rateStr = String(forecast.rate);
+                                if (!rateStr.includes('%')) rateStr = Math.round(parseFloat(rateStr) * 100) + '%';
+                                rateEl.innerText = rateStr;
+                            }
+                            dataFound = true;
+                        }
+                    }
+                }
+
+                if (dataFound) {
+                    const newEmpty = Math.max(0, totalSlots - newBikes);
+                    bikesEl.innerText = newBikes;
+                    emptyEl.innerText = newEmpty;
+                    
+                    row.dataset.percent = percent;
+                    row.dataset.currentStatus = light;
+
+                    if (light === 'orange') {
+                        if (newBikes === 0) {
+                            statusEl.innerHTML = '<span class="status-badge status-orange">● 橘燈 (沒車)</span>';
+                        } else {
+                            statusEl.innerHTML = '<span class="status-badge status-orange">● 橘燈 (快沒車)</span>';
+                        }
+                        row.style.display = ''; // 確認是橘燈
+                    } else if (light === 'red') {
+                        statusEl.innerHTML = '<span class="status-badge status-red">● 紅燈 (過多)</span>';
+                    } else {
+                        statusEl.innerHTML = '<span class="status-badge status-green">● 綠燈 (安全)</span>';
+                    }
+
+                    row.onclick = function() {
+                        showRecommendation(name, Array.from(document.querySelectorAll('.station-row')));
+                    };
+                }
+            });
+
+            // 排序
+            rowsArray.sort((a, b) => {
+                let pA = parseFloat(a.dataset.percent) || 0;
+                let pB = parseFloat(b.dataset.percent) || 0;
+                return pA - pB;
+            });
+
+            if (tbody) {
+                rowsArray.forEach(row => tbody.appendChild(row));
+            }
+        }
+
+        // 尋找鄰近來源站點的調度推薦
+        function showRecommendation(clickedName, allRows) {
+            const currentGeo = geoData[clickedName];
+            if (!currentGeo) {
+                alert(`暫無「${clickedName}」的座標資料，無法計算`);
+                return;
+            }
+
+            const validTargets = [];
+
+            allRows.forEach(row => {
+                const targetName = row.dataset.name;
+                const targetStatus = row.dataset.currentStatus;
+                
+                // 調度邏輯
+                if (targetName !== clickedName && (targetStatus === 'green' || targetStatus === 'red') && geoData[targetName]) {
+                    const distInMeters = getRealDistance(currentGeo.lat, currentGeo.lng, geoData[targetName].lat, geoData[targetName].lng);
+                    
+                    validTargets.push({
+                        name: targetName,
+                        bikes: parseInt(row.querySelector('.st-bikes').innerText) || 0,
+                        total: parseInt(row.querySelector('.st-total').innerText) || 0,
+                        statusText: row.querySelector('.st-status').innerHTML,
+                        distance: distInMeters 
+                    });
+                }
+            });
+
+            validTargets.sort((a, b) => a.distance - b.distance);
+            const top3 = validTargets.slice(0, 3);
+
+            const panel = document.getElementById('dispatch-panel');
+            const titleText = document.getElementById('dispatch-current-station');
+            const descText = document.getElementById('dispatch-desc');
+            const listContainer = document.getElementById('recommend-list');
+
+            titleText.innerText = `${clickedName} (車輛即將見底)`;
+            descText.innerText = "系統已為此缺車站點搜尋周邊鄰近且車輛充裕的來源站（綠燈或紅燈），調度員可前往以下最近的三個站點載運車輛來補車：";
+            listContainer.innerHTML = '';
+
+            if (top3.length === 0) {
+                listContainer.innerHTML = '<p style="color: #e74c3c; font-weight: bold; padding: 10px;">⚠️ 警報：目前中壢周邊區域皆面臨極度缺車，找不到可以支援補車的安全站點！</p>';
+            } else {
+                top3.forEach(target => {
+                    const card = document.createElement('div');
+                    card.className = 'recommend-card';
+                    card.innerHTML = `
+                        <h4>${target.name}</h4>
+                        <p>目前燈號：${target.statusText}</p>
+                        <p>估計距離：<b style="color: #e67e22;">${formatDistance(target.distance)}</b></p>
+                        <p>現有車輛：<span style="color:#2c3e50; font-weight:bold;">${target.bikes}</span> / ${target.total} 輛</p>
+                        <p>可調度量：<b>${Math.max(0, target.bikes - Math.round(target.total * 0.3))}</b> 輛 (保留安全水位)</p>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            }
+
+            if(panel) {
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        fetchAllSystemData(); // 網頁載入時啟動
+        });
+
+        document.getElementById('time-predict').addEventListener('change', function() {
+            updateOrangeTableWithRealData(this.value);
+        });
+
+        setInterval(fetchAllSystemData, 60000); 
+    </script>
+</body>
+</html>

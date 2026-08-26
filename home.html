@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youbike調度預測系統</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <style>
+        /* 基礎設定 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* 導覽列 */
+        nav {
+            background-color: #1a2a47;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 5px 15px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #f0ad4e;
+        }
+
+        /* 地圖區域 */
+        .banner {
+            height: 450px;       
+            width: 100%;
+            margin-top: 0;
+            z-index: 5;          
+            border-radius: 0 0 20px 20px;
+            background-image: none !important; 
+            background-color: #f0f2f5;        
+        }
+
+        #map {
+            width: 100%;
+            height: 450px; 
+            margin: 0 auto;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            background-image: none !important;
+            background-color: #f8f9fa; 
+            position: relative;
+            z-index: 1; 
+            overflow: hidden;
+        }
+
+        /* 地圖內彈出視窗美化 */
+        .leaflet-popup-content-wrapper {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            border-radius: 8px;
+            padding: 2px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 15px;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .leaflet-popup-tip {
+            background: white;
+        }
+
+        /* 深色按鈕操作區 */
+        .button-section {
+            background-color: #0d1b31;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .btn {
+            padding: 12px 35px;
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* 按鈕顏色設定 */
+        .btn-blue { background-color: #2980b9; }
+        .btn-red { background-color: #c0392b; }
+        .btn-orange { background-color: #e67e22; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* 下方統計色塊區 */
+        .stats-section {
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .card-block {
+            width: 280px;
+            height: 250px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card-block:hover {
+            transform: scale(1.02);
+        }
+
+        /* 淺色塊樣式 */
+        .bg-red { 
+            background-color: #fdf2f2; 
+            color: #b91c1c; 
+        }
+        .bg-green { 
+            background-color: #f0fdf4; 
+            color: #15803d; 
+        }
+        .bg-orange { 
+            background-color: #fffaf2; 
+            color: #b45309; 
+        }
+
+        .label {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .number-large {
+            font-size: 3.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Youbike調度預測系統</div>
+        <div class="nav-links">
+            <a href="home.html">首頁</a>
+        </div>
+    </nav>
+
+    <div id="map" class="banner"></div>
+
+    <div class="button-section">
+        <a href="info.html" class="btn btn-blue">站點資訊</a>
+        <a href="red.html" class="btn btn-red">紅燈站點</a>
+        <a href="orange.html" class="btn btn-orange">橘燈站點</a>
+    </div>
+
+    <div class="stats-section">
+        <div class="card-block bg-red">
+            <div class="label">紅燈站點數量</div>
+            <div class="number-large" id="count-red">0</div>
+        </div>
+        <div class="card-block bg-green">
+            <div class="label">綠燈站點數量</div>
+            <div class="number-large" id="count-green">0</div>
+        </div>
+        <div class="card-block bg-orange">
+            <div class="label">橘燈站點數量</div>
+            <div class="number-large" id="count-orange">0</div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化地圖：設定中心點在中壢區
+        var map = L.map('map').setView([24.962, 121.22], 14);
+    
+        // 載入地圖底圖
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+    
+        const mapStations = [
+            { name: "中央大學圖書館", lat: 24.96813, lng: 121.19467, bikes: 45, total: 62 },
+            { name: "中壢高中", lat: 24.96082, lng: 121.21204, bikes: 37, total: 52 },
+            { name: "中壢火車站(前站)中和路", lat: 24.95404, lng: 121.22644, bikes: 1, total: 60 },
+            { name: "中原大學", lat: 24.95794, lng: 121.2402, bikes: 88, total: 99 },
+            { name: "銀河廣場", lat: 24.96172, lng: 121.22424, bikes: 31, total: 58 },
+            { name: "中壢區公所", lat: 24.9657, lng: 121.2247, bikes: 5, total: 40 },
+            { name: "光明公園", lat: 24.96281, lng: 121.21739, bikes: 70, total: 94 },
+            { name: "翠堤橋", lat: 24.95327, lng: 121.21588, bikes: 13, total: 46 },
+            { name: "中壢國小", lat: 24.9541, lng: 121.22035, bikes: 1, total: 46 },
+            { name: "莒光公園", lat: 24.95147, lng: 121.23569, bikes: 16, total: 30 },
+            { name: "中壢火車站(後站)", lat: 24.95235, lng: 121.22433, bikes: 1, total: 99 },
+            { name: "中正公園(元化路)", lat: 24.96042, lng: 121.2273, bikes: 0, total: 40 },
+            { name: "中壢區聯合辦公大樓", lat: 24.96207, lng: 121.23003, bikes: 20, total: 38 },
+            { name: "夢幻公園", lat: 24.962541, lng: 121.261596, bikes: 19, total: 46 },
+            { name: "內壢自強公園", lat: 24.96769, lng: 121.25928, bikes: 0, total: 50 },
+            { name: "內壢復興公園", lat: 24.97363, lng: 121.24811, bikes: 4, total: 40 },
+            { name: "元智大學", lat: 24.97035, lng: 121.26325, bikes: 1, total: 82 },
+            { name: "信義國小", lat: 24.95102, lng: 121.23145, bikes: 15, total: 30 },
+            { name: "莊敬廣場", lat: 24.97185, lng: 121.25726, bikes: 5, total: 70 },
+            { name: "吉林路吉利六街口", lat: 24.9829, lng: 121.25041, bikes: 8, total: 20 },
+            { name: "龍岡森林公園", lat: 24.93397, lng: 121.23592, bikes: 23, total: 40 },
+            { name: "忠孝廣場", lat: 24.97252, lng: 121.25685, bikes: 10, total: 20 },
+            { name: "忠福廣場", lat: 24.971805, lng: 121.227697, bikes: 15, total: 30 },
+            { name: "健行科技大學", lat: 24.94678, lng: 121.22901, bikes: 33, total: 50 },
+            { name: "啟英高中", lat: 24.97561, lng: 121.234553, bikes: 21, total: 40 },
+            { name: "內壢文化公園", lat: 24.97957, lng: 121.2501, bikes: 12, total: 25 },
+            { name: "萬能科技大學", lat: 24.99275, lng: 121.22993, bikes: 26, total: 45 },
+            { name: "環中東永福路口", lat: 24.96203, lng: 121.25517, bikes: 14, total: 30 },
+            { name: "五權公園", lat: 24.958867, lng: 121.204579, bikes: 11, total: 25 },
+            { name: "中壢新興公園", lat: 24.94527, lng: 121.22605, bikes: 16, total: 30 },
+            { name: "桃園市立圖書館內壢分館", lat: 24.97795, lng: 121.25797, bikes: 18, total: 30 },
+            { name: "中央大學依仁堂", lat: 24.96712, lng: 121.19096, bikes: 29, total: 50 },
+            { name: "桃園市立圖書館龍岡分館", lat: 24.93794, lng: 121.25583, bikes: 15, total: 30 },
+            { name: "捷運高鐵桃園站(A18)", lat: 25.01378, lng: 121.21393, bikes: 35, total: 60 },
+            { name: "捷運桃園體育園區站(A19)", lat: 25.00157, lng: 121.20278, bikes: 24, total: 50 },
+            { name: "捷運環北站(A21)", lat: 24.96756, lng: 121.22097, bikes: 27, total: 50 },
+            { name: "青埔國中", lat: 25.01083, lng: 121.2058, bikes: 13, total: 30 },
+            { name: "領航公園", lat: 25.00741, lng: 121.20105, bikes: 16, total: 30 },
+            { name: "仁祥公園", lat: 24.948864, lng: 121.260842, bikes: 10, total: 20 },
+            { name: "篤行公園", lat: 24.958288, lng: 121.26328, bikes: 12, total: 25 },
+            { name: "甲蟲公園", lat: 24.97754, lng: 121.25275, bikes: 14, total: 25 },
+            { name: "中壢中央公園", lat: 24.95666, lng: 121.2262, bikes: 19, total: 35 },
+            { name: "黎明公園", lat: 24.93989, lng: 121.25613, bikes: 9, total: 20 },
+            { name: "興仁公園", lat: 24.96626, lng: 121.26355, bikes: 22, total: 40 },
+            { name: "自立新村(榮安一街)", lat: 24.96543, lng: 121.25338, bikes: 15, total: 30 },
+            { name: "晉元路仁德一街口", lat: 24.950926, lng: 121.261293, bikes: 11, total: 25 },
+            { name: "龍和公園", lat: 24.93422, lng: 121.24481, bikes: 13, total: 25 },
+            { name: "紫雲宮", lat: 24.94485, lng: 121.22283, bikes: 16, total: 30 },
+            { name: "常樂公園", lat: 24.97688, lng: 121.25086, bikes: 14, total: 25 },
+            { name: "金鋒太子", lat: 24.94591, lng: 121.24863, bikes: 12, total: 25 },
+            { name: "華愛兒童公園", lat: 24.952303, lng: 121.259724, bikes: 10, total: 20 },
+            { name: "過嶺國中", lat: 24.9602, lng: 121.17552, bikes: 18, total: 35 },
+            { name: "南方莊園", lat: 24.96728, lng: 121.17791, bikes: 15, total: 30 },
+            { name: "南亞技術學院", lat: 24.93756, lng: 121.25171, bikes: 22, total: 45 },
+            { name: "華勛公園", lat: 24.946622, lng: 121.261741, bikes: 13, total: 25 },
+            { name: "青塘園", lat: 25.00641, lng: 121.20492, bikes: 26, total: 50 },
+            { name: "大江購物中心", lat: 25.00127, lng: 121.22939, bikes: 31, total: 60 },
+            { name: "老街溪河川教育中心", lat: 24.95374, lng: 121.21856, bikes: 14, total: 30 },
+            { name: "龍岡圓環", lat: 24.926002, lng: 121.244046, bikes: 17, total: 30 },
+            { name: "內厝社區活動中心", lat: 24.98932, lng: 121.17943, bikes: 8, total: 20 },
+            { name: "龍岡大操場", lat: 24.930164, lng: 121.239605, bikes: 28, total: 50 },
+            { name: "普忠路770巷口", lat: 24.954231, lng: 121.251253, bikes: 11, total: 25 },
+            { name: "青埔國小", lat: 25.00662, lng: 121.21368, bikes: 19, total: 35 },
+            { name: "公七公園", lat: 25.008599, lng: 121.219904, bikes: 14, total: 30 },
+            { name: "至善綠園", lat: 24.94035, lng: 121.24995, bikes: 12, total: 25 },
+            { name: "中鑄公園", lat: 24.96853, lng: 121.25065, bikes: 13, total: 25 },
+            { name: "大全聯中壢店", lat: 24.95525, lng: 121.23484, bikes: 16, total: 30 },
+            { name: "龍興國中", lat: 24.93784, lng: 121.23638, bikes: 20, total: 35 },
+            { name: "竹風青田", lat: 25.0115, lng: 121.20184, bikes: 15, total: 30 },
+            { name: "龍安里集會所", lat: 24.93149, lng: 121.25766, bikes: 9, total: 20 },
+            { name: "中壢仁德公園", lat: 24.953347, lng: 121.266529, bikes: 14, total: 25 },
+            { name: "龍慈路後寮一路口", lat: 24.941207, lng: 121.245130, bikes: 11, total: 25 },
+            { name: "功學社新村", lat: 24.954173, lng: 121.256291, bikes: 13, total: 25 },
+            { name: "六和兒童公園", lat: 24.96364, lng: 121.22458, bikes: 18, total: 30 },
+            { name: "普忠榮民南路口", lat: 24.949502, lng: 121.256339, bikes: 15, total: 30 },
+            { name: "龍岡停車場", lat: 24.930088, lng: 121.253064, bikes: 16, total: 30 },
+            { name: "莒光公園(環中東路)", lat: 24.94894, lng: 121.23597, bikes: 21, total: 40 },
+            { name: "環中東實踐路口", lat: 24.95368, lng: 121.24334, bikes: 24, total: 45 },
+            { name: "新明國中", lat: 24.95621, lng: 121.21231, bikes: 19, total: 35 },
+            { name: "中華路一段文化二路口", lat: 24.97093, lng: 121.25355, bikes: 13, total: 25 },
+            { name: "過嶺廣場", lat: 24.96035, lng: 121.16451, bikes: 10, total: 20 },
+            { name: "中壢公15公園", lat: 25.00053, lng: 121.2079, bikes: 12, total: 25 },
+            { name: "新街國小", lat: 24.96438, lng: 121.22873, bikes: 22, total: 40 },
+            { name: "福州橋", lat: 24.96830, lng: 121.23478, bikes: 11, total: 25 },
+            { name: "高鐵桃園站(3號出口)", lat: 25.01242, lng: 121.21522, bikes: 38, total: 60 },
+            { name: "老街溪環河步道(環北路)", lat: 24.9661, lng: 121.21933, bikes: 15, total: 30 },
+            { name: "忠孝黃昏市場", lat: 24.98226, lng: 121.25297, bikes: 17, total: 30 },
+            { name: "廣明停車場", lat: 24.95458, lng: 121.21406, bikes: 14, total: 25 },
+            { name: "高鐵北青昇二街口", lat: 25.01804, lng: 121.22033, bikes: 13, total: 25 },
+            { name: "竹風青庭", lat: 25.00604, lng: 121.20138, bikes: 16, total: 30 },
+            { name: "青埔公10公園", lat: 25.0144, lng: 121.20756, bikes: 15, total: 30 },
+            { name: "玖都機構", lat: 25.005, lng: 121.20865, bikes: 11, total: 25 },
+            { name: "天翔社區", lat: 24.946126, lng: 121.258832, bikes: 14, total: 25 },
+            { name: "中壢區殯葬服務中心", lat: 24.976932, lng: 121.227558, bikes: 10, total: 20 },
+            { name: "健行科技大學民設學院", lat: 24.94933, lng: 121.22901, bikes: 18, total: 30 },
+            { name: "老街溪河岸廣場", lat: 24.96027, lng: 121.2191, bikes: 13, total: 25 },
+            { name: "中壢藝術館", lat: 24.95823, lng: 121.22700, bikes: 23, total: 40 },
+            { name: "同心公園", lat: 25.00485, lng: 121.21889, bikes: 11, total: 25 },
+            { name: "捷運老街溪站(A22)", lat: 24.95826, lng: 121.2193, bikes: 26, total: 50 },
+            { name: "良茂詠恆", lat: 25.00643, lng: 121.21642, bikes: 14, total: 30 },
+            { name: "置地廣場 桃園", lat: 25.01696, lng: 121.21273, bikes: 32, total: 60 },
+            { name: "領航南青溪路口", lat: 25.01785, lng: 121.22416, bikes: 12, total: 25 },
+            { name: "櫻花緻", lat: 25.0051, lng: 121.2234, bikes: 15, total: 30 },
+            { name: "青昇公園", lat: 25.01471, lng: 121.22195, bikes: 17, total: 30 },
+            { name: "中正公園(中美路)", lat: 24.95909, lng: 121.22480, bikes: 20, total: 40 },
+            { name: "萬坪公園", lat: 24.93284, lng: 121.24914, bikes: 14, total: 25 },
+            { name: "青埔兒十公園", lat: 25.01086, lng: 121.20911, bikes: 13, total: 25 },
+            { name: "仁美公園", lat: 24.94427, lng: 121.25051, bikes: 11, total: 25 },
+            { name: "中原文創園區(忠信路)", lat: 24.96367, lng: 121.2408, bikes: 22, total: 45 },
+            { name: "新街溪河濱公園", lat: 24.95928, lng: 121.22969, bikes: 16, total: 30 },
+            { name: "中壢一號E棟", lat: 24.93654, lng: 121.25468, bikes: 19, total: 35 },
+            { name: "太子鎮社區", lat: 24.93940, lng: 121.24642, bikes: 15, total: 30 },
+            { name: "清溪兒童公園", lat: 25.00985, lng: 121.2037, bikes: 12, total: 25 },
+            { name: "中壢火車站(前站)美樂路", lat: 24.95294, lng: 121.22408, bikes: 14, total: 35 },
+            { name: "捷運高鐵桃園站(A18)2號出口", lat: 25.01429, lng: 121.21436, bikes: 29, total: 50 },
+            { name: "復興中山路口(中壢)", lat: 24.95599, lng: 121.22462, bikes: 11, total: 25 },
+            { name: "青峰青昇路口", lat: 25.01549, lng: 121.21964, bikes: 13, total: 25 },
+            { name: "普慶公園", lat: 24.94857, lng: 121.24633, bikes: 15, total: 30 },
+            { name: "陸軍專校(龍東路)", lat: 24.93857, lng: 121.25918, bikes: 24, total: 45 },
+            { name: "月眉環保公園(中壢)", lat: 25.01461, lng: 121.18988, bikes: 8, total: 20 },
+            { name: "富台國小", lat: 24.93961, lng: 121.25233, bikes: 16, total: 30 },
+            { name: "IKEA桃園店", lat: 25.01383, lng: 121.21747, bikes: 34, total: 60 },
+            { name: "環西路二段300巷口", lat: 24.96491, lng: 121.21353, bikes: 11, total: 25 },
+            { name: "置地廣場桃園B區", lat: 25.01942, lng: 121.2153, bikes: 20, total: 40 },
+            { name: "西園南園二路口", lat: 24.97174, lng: 121.23433, bikes: 13, total: 25 },
+            { name: "中華路二段延平路口", lat: 24.96323, lng: 121.23326, bikes: 15, total: 30 },
+            { name: "仁和親子公園", lat: 24.95242, lng: 121.26421, bikes: 12, total: 25 },
+            { name: "捷運興南站(A20)", lat: 24.98065, lng: 121.21581, bikes: 16, total: 35 },
+            { name: "桃園會展中心", lat: 25.00397, lng: 121.20105, bikes: 23, total: 45 },
+            { name: "聖德基督學院", lat: 24.98501, lng: 121.22231, bikes: 9, total: 20 },
+            { name: "環中東榮安一街口", lat: 24.96345, lng: 121.25675, bikes: 14, total: 25 },
+            { name: "中央西路一段大同路口", lat: 24.95769, lng: 121.22267, bikes: 17, total: 30 },
+            { name: "龍慈路龍岡路三段281巷口", lat: 24.934961, lng: 121.238412, bikes: 11, total: 25 },
+            { name: "中壢分局仁愛派出所", lat: 24.95367, lng: 121.26129, bikes: 13, total: 25 },
+            { name: "中壢火車站(前站)中和路二", lat: 24.95402, lng: 121.22627, bikes: 15, total: 35 },
+            { name: "中壢運動公園1號停車場", lat: 24.94613, lng: 121.23216, bikes: 22, total: 40 },
+            { name: "普忠環中東路口", lat: 24.95757, lng: 121.24942, bikes: 14, total: 30 },
+            { name: "松江北路定寧路口", lat: 24.99379, lng: 121.24880, bikes: 12, total: 25 }
+        ];
+        // 依陣列順序加站點編號
+        mapStations.forEach((st, index) => {
+            let num = index + 1;
+            if (num >= 124) num += 1; 
+            
+            st.id = '500304' + String(num).padStart(3, '0');
+        });
+
+        const markers = {};
+
+        // 核心計算與樣式函式
+        function getStationMarkerStyle(percent) {
+            let config = {
+                radius: 6, fillColor: "#27ae60", color: "#fff", 
+                weight: 1.5, fillOpacity: 0.8, light: "green"
+            };
+
+            if (percent > 70) {
+                let severity = (percent - 70) / 30;
+                config.radius = 8 + (severity * 12);
+                config.fillColor = "#e74c3c";
+                config.weight = 2;
+                config.fillOpacity = 0.7 + (severity * 0.2);
+                config.light = "red";
+            } else if (percent < 30) {
+                let severity = (30 - percent) / 30;
+                config.radius = 8 + (severity * 12);
+                config.fillColor = "#e67e22";
+                config.weight = 2;
+                config.fillOpacity = 0.7 + (severity * 0.2);
+                config.light = "orange";
+            }
+            return config;
+        }
+
+        // 初始化
+        mapStations.forEach(st => {
+            let circle = L.circleMarker([st.lat, st.lng], {
+                radius: 6, fillColor: "#bdc3c7", color: "#fff", weight: 1, fillOpacity: 0.5
+            }).addTo(map);
+            
+            circle.bindPopup(`<b>${st.name}</b><br>資料讀取中`);
+            markers[st.id] = { circle: circle, name: st.name };
+        });
+
+        // 抓取CSV
+        function fetchCurrentMapData() {
+            const timestamp = new Date().getTime();
+            const currentDataCsv = 'data/cleaned_weather.csv';
+
+            Papa.parse(`${currentDataCsv}?t=${timestamp}`, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const rows = results.data;
+                    let currentData = {};
+
+                    // 保留最後一筆
+                    rows.forEach(row => {
+                        const stationId = String(row['station_id'] || '').trim();
+                        const totalSlots = parseInt(row['total_slots']) || 0;
+                        const bikes = parseInt(row['bikes']) || 0;
+
+                        if (stationId && stationId !== 'undefined') {
+                            currentData[stationId] = { total: totalSlots, bikes: bikes };
+                        }
+                    });
+
+                    // 準備統計數量
+                    let redCount = 0, greenCount = 0, orangeCount = 0;
+
+                    Object.keys(markers).forEach(id => {
+                        let data = currentData[id];
+                        if (data) {
+                            let percent = data.total > 0 ? (data.bikes / data.total) * 100 : 0;
+                            let style = getStationMarkerStyle(percent);
+                            
+                            // 更新圓圈樣式與大小
+                            markers[id].circle.setStyle({
+                                radius: style.radius,
+                                fillColor: style.fillColor,
+                                color: style.color,
+                                weight: style.weight,
+                                fillOpacity: style.fillOpacity
+                            });
+
+                            // 更新點擊彈出視窗內容
+                            markers[id].circle.setPopupContent(`
+                                <div style="font-size:14px; font-family: 'Microsoft JhengHei';">
+                                    <b>${markers[id].name}</b><br>
+                                    可借車輛：<span style="color:${style.fillColor}; font-weight:bold;">${data.bikes}</span> / ${data.total}
+                                </div>
+                            `);
+
+                            // 累加對應的燈號數量
+                            if (style.light === 'red') redCount++;
+                            else if (style.light === 'orange') orangeCount++;
+                            else greenCount++;
+                        }
+                    });
+
+                    // 更新畫面統計數字
+                    document.getElementById('count-red').innerText = redCount;
+                    document.getElementById('count-green').innerText = greenCount;
+                    document.getElementById('count-orange').innerText = orangeCount;
+
+                    console.log(`首頁地圖更新 統計：紅(${redCount}) 綠(${greenCount}) 橘(${orangeCount})`);
+                },
+                error: function(err) {
+                    console.error("讀取失敗：", err);
+                }
+            });
+        }
+
+        // 1分鐘刷新刷新
+        fetchCurrentMapData();
+        setInterval(fetchCurrentMapData, 60000);
+    </script>
+</body>
+</html>
