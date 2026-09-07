@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>調度任務完成回報</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            color: #243447;
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        nav {
+            height: 68px;
+            padding: 0 8%;
+            background: #0d1b31;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(92%, 720px);
+            margin: 40px auto;
+        }
+
+        .task-card {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+        }
+
+        .status {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 4px 0 28px;
+            font-size: 26px;
+        }
+
+        .route {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f7f9fc;
+        }
+
+        .station {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .station+.station {
+            margin-top: 20px;
+        }
+
+        .station-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            color: white;
+            display: grid;
+            place-items: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .source {
+            background: #c0392b;
+        }
+
+        .target {
+            background: #27ae60;
+        }
+
+        .label {
+            color: #728096;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .station-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .station-id {
+            margin-top: 4px;
+            color: #728096;
+            font-size: 13px;
+        }
+
+        .arrow {
+            margin: 10px 0 10px 18px;
+            color: #8795a8;
+            font-size: 22px;
+        }
+
+        .section {
+            margin-top: 28px;
+        }
+
+        .section-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .recommended {
+            padding: 14px;
+            border-left: 5px solid #2980b9;
+            background: #eef6ff;
+            border-radius: 7px;
+        }
+
+        .quantity-control {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+        }
+
+        .quantity-button {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: #e8eef5;
+            color: #243447;
+            font-size: 26px;
+            cursor: pointer;
+        }
+
+        .quantity-button:hover {
+            background: #dbe5ef;
+        }
+
+        #actual-quantity {
+            min-width: 70px;
+            text-align: center;
+            font-size: 34px;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ccd5df;
+            border-radius: 8px;
+            font: inherit;
+            resize: vertical;
+        }
+
+        .hint {
+            margin-top: 7px;
+            color: #728096;
+            font-size: 13px;
+        }
+
+        .error {
+            display: none;
+            margin-top: 8px;
+            color: #c0392b;
+            font-size: 14px;
+        }
+
+        .submit-button {
+            width: 100%;
+            margin-top: 28px;
+            padding: 15px;
+            border: none;
+            border-radius: 9px;
+            background: #2980b9;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-button:hover {
+            background: #216b9b;
+        }
+
+        .success {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 64px;
+        }
+
+        @media (max-width: 600px) {
+            .task-card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">YouBike調度預測系統</div>
+        <a href="home.html">返回首頁</a>
+    </nav>
+
+    <main class="container">
+        <section class="task-card" id="task-form">
+            <span class="status">進行中</span>
+            <h1>調度任務完成回報</h1>
+
+            <div class="route">
+                <div class="station">
+                    <div class="station-icon source">起</div>
+                    <div>
+                        <div class="label">起點站</div>
+                        <div class="station-name" id="source-name"></div>
+                        <div class="station-id" id="source-id"></div>
+                    </div>
+                </div>
+
+                <div class="arrow">↓</div>
+
+                <div class="station">
+                    <div class="station-icon target">迄</div>
+                    <div>
+                        <div class="label">目的站</div>
+                        <div class="station-name" id="target-name"></div>
+                        <div class="station-id" id="target-id"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">系統建議數量</div>
+                <div class="recommended">
+                    建議本次調度
+                    <strong id="recommended-quantity"></strong>
+                    輛腳踏車
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">實際調度數量</div>
+
+                <div class="quantity-control">
+                    <button type="button" class="quantity-button" id="decrease-button" aria-label="減少一輛">
+                        −
+                    </button>
+
+                    <div id="actual-quantity">0</div>
+
+                    <button type="button" class="quantity-button" id="increase-button" aria-label="增加一輛">
+                        ＋
+                    </button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    數量不同或無法完成的原因
+                </div>
+
+                <textarea id="note" placeholder="例如：運輸車容量不足、現場車輛數量已改變、部分車輛故障"></textarea>
+
+                <div class="hint">
+                    實際數量與系統建議不同時，此欄位必填。
+                </div>
+
+                <div class="error" id="note-error">
+                    請填寫未依建議數量完成的原因。
+                </div>
+            </div>
+
+            <button type="button" class="submit-button" id="submit-button">
+                確認完成任務
+            </button>
+        </section>
+
+        <section class="task-card success" id="success-page">
+            <div class="success-icon">✅</div>
+            <h1>任務已完成</h1>
+            <p id="success-message"></p>
+            <a href="home.html">返回首頁</a>
+        </section>
+    </main>
+
+    <script>
+        /*
+         * 暫時的假任務。
+         * 如果前一個頁面有傳入任務，就會使用前一頁的資料；
+         * 如果沒有，便使用這筆假資料，方便你單獨測試。
+         */
+        const sampleTask = {
+            taskId: "TASK-001",
+            sourceStationId: "500304004",
+            sourceStationName: "中原大學",
+            targetStationId: "500304010",
+            targetStationName: "莒光公園",
+            recommendedQuantity: 8,
+            maximumQuantity: 15
+        };
+
+        const savedTask = localStorage.getItem("activeDispatchTask");
+
+        let task;
+
+        try {
+            task = savedTask ? JSON.parse(savedTask) : sampleTask;
+        } catch (error) {
+            task = sampleTask;
+        }
+
+        let actualQuantity = Number(task.recommendedQuantity);
+
+        const sourceName = document.getElementById("source-name");
+        const sourceId = document.getElementById("source-id");
+        const targetName = document.getElementById("target-name");
+        const targetId = document.getElementById("target-id");
+        const recommendedQuantity =
+            document.getElementById("recommended-quantity");
+        const actualQuantityElement =
+            document.getElementById("actual-quantity");
+        const note = document.getElementById("note");
+        const noteError = document.getElementById("note-error");
+
+        function renderTask() {
+            sourceName.textContent = task.sourceStationName;
+            sourceId.textContent = `站點編號：${task.sourceStationId}`;
+
+            targetName.textContent = task.targetStationName;
+            targetId.textContent = `站點編號：${task.targetStationId}`;
+
+            recommendedQuantity.textContent = task.recommendedQuantity;
+            actualQuantityElement.textContent = actualQuantity;
+        }
+
+        document
+            .getElementById("decrease-button")
+            .addEventListener("click", function () {
+                if (actualQuantity > 0) {
+                    actualQuantity -= 1;
+                    renderTask();
+                }
+            });
+
+        document
+            .getElementById("increase-button")
+            .addEventListener("click", function () {
+                const maximumQuantity =
+                    Number(task.maximumQuantity) || 999;
+
+                if (actualQuantity < maximumQuantity) {
+                    actualQuantity += 1;
+                    renderTask();
+                }
+            });
+
+        document
+            .getElementById("submit-button")
+            .addEventListener("click", function () {
+                const recommended =
+                    Number(task.recommendedQuantity);
+
+                if (
+                    actualQuantity !== recommended &&
+                    note.value.trim() === ""
+                ) {
+                    noteError.style.display = "block";
+                    note.focus();
+                    return;
+                }
+
+                noteError.style.display = "none";
+
+                const completedTask = {
+                    ...task,
+                    actualQuantity: actualQuantity,
+                    note: note.value.trim(),
+                    status: "completed",
+                    completedAt: new Date().toISOString()
+                };
+
+                const oldRecords = JSON.parse(
+                    localStorage.getItem("dispatchTaskRecords") || "[]"
+                );
+
+                oldRecords.push(completedTask);
+
+                localStorage.setItem(
+                    "dispatchTaskRecords",
+                    JSON.stringify(oldRecords)
+                );
+
+                localStorage.removeItem("activeDispatchTask");
+
+                document.getElementById("task-form").style.display = "none";
+                document.getElementById("success-page").style.display = "block";
+
+                document.getElementById("success-message").textContent =
+                    `實際調度 ${actualQuantity} 輛，完成時間已記錄。`;
+            });
+
+        renderTask();
+    </script>
+</body>
+
+</html>
