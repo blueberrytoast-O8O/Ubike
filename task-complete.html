@@ -163,6 +163,11 @@
             background: #dbe5ef;
         }
 
+        .quantity-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
         #actual-quantity {
             min-width: 70px;
             text-align: center;
@@ -170,18 +175,63 @@
             font-weight: bold;
         }
 
-        textarea {
+        .reason-options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .reason-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 15px;
+            border: 1px solid #ccd5df;
+            border-radius: 9px;
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .reason-option:hover {
+            border-color: #2980b9;
+            background: #f4f9ff;
+        }
+
+        .reason-option input {
+            width: 18px;
+            height: 18px;
+            accent-color: #2980b9;
+            cursor: pointer;
+        }
+
+        .other-reason-container {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .other-reason-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #other-reason-input {
             width: 100%;
-            min-height: 100px;
             padding: 12px;
             border: 1px solid #ccd5df;
             border-radius: 8px;
             font: inherit;
-            resize: vertical;
+        }
+
+        #other-reason-input:focus {
+            border-color: #2980b9;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.12);
         }
 
         .hint {
-            margin-top: 7px;
+            margin-top: 10px;
             color: #728096;
             font-size: 13px;
         }
@@ -220,6 +270,16 @@
             font-size: 64px;
         }
 
+        .home-button {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 11px 20px;
+            border-radius: 8px;
+            background: #2980b9;
+            color: white;
+            text-decoration: none;
+        }
+
         @media (max-width: 600px) {
             .task-card {
                 padding: 22px;
@@ -242,6 +302,7 @@
             <div class="route">
                 <div class="station">
                     <div class="station-icon source">起</div>
+
                     <div>
                         <div class="label">起點站</div>
                         <div class="station-name" id="source-name"></div>
@@ -253,6 +314,7 @@
 
                 <div class="station">
                     <div class="station-icon target">迄</div>
+
                     <div>
                         <div class="label">目的站</div>
                         <div class="station-name" id="target-name"></div>
@@ -263,6 +325,7 @@
 
             <div class="section">
                 <div class="section-title">系統建議數量</div>
+
                 <div class="recommended">
                     建議本次調度
                     <strong id="recommended-quantity"></strong>
@@ -291,14 +354,42 @@
                     數量不同或無法完成的原因
                 </div>
 
-                <textarea id="note" placeholder="例如：運輸車容量不足、現場車輛數量已改變、部分車輛故障"></textarea>
+                <div class="reason-options">
+                    <label class="reason-option">
+                        <input type="checkbox" name="reason" value="運輸車容量不足">
+                        <span>運輸車容量不足</span>
+                    </label>
 
-                <div class="hint">
-                    實際數量與系統建議不同時，此欄位必填。
+                    <label class="reason-option">
+                        <input type="checkbox" name="reason" value="現場車輛數量已改變">
+                        <span>現場車輛數量已改變</span>
+                    </label>
+
+                    <label class="reason-option">
+                        <input type="checkbox" name="reason" value="部分車輛故障">
+                        <span>部分車輛故障</span>
+                    </label>
+
+                    <label class="reason-option">
+                        <input type="checkbox" name="reason" value="其他" id="other-reason-checkbox">
+                        <span>其他</span>
+                    </label>
                 </div>
 
-                <div class="error" id="note-error">
-                    請填寫未依建議數量完成的原因。
+                <div id="other-reason-container" class="other-reason-container">
+                    <label for="other-reason-input">
+                        請說明其他原因
+                    </label>
+
+                    <input type="text" id="other-reason-input" placeholder="請輸入其他原因">
+                </div>
+
+                <div class="hint">
+                    實際數量與系統建議不同時，至少需要勾選一個原因。
+                </div>
+
+                <div class="error" id="reason-error">
+                    請選擇未依建議數量完成的原因。
                 </div>
             </div>
 
@@ -311,16 +402,13 @@
             <div class="success-icon">✅</div>
             <h1>任務已完成</h1>
             <p id="success-message"></p>
-            <a href="home.html">返回首頁</a>
+            <a href="home.html" class="home-button">
+                返回首頁
+            </a>
         </section>
     </main>
 
     <script>
-        /*
-         * 暫時的假任務。
-         * 如果前一個頁面有傳入任務，就會使用前一頁的資料；
-         * 如果沒有，便使用這筆假資料，方便你單獨測試。
-         */
         const sampleTask = {
             taskId: "TASK-001",
             sourceStationId: "500304004",
@@ -331,105 +419,279 @@
             maximumQuantity: 15
         };
 
-        const savedTask = localStorage.getItem("activeDispatchTask");
+        const savedTask =
+            localStorage.getItem("activeDispatchTask");
 
         let task;
 
         try {
-            task = savedTask ? JSON.parse(savedTask) : sampleTask;
+            task = savedTask
+                ? JSON.parse(savedTask)
+                : sampleTask;
         } catch (error) {
             task = sampleTask;
         }
 
-        let actualQuantity = Number(task.recommendedQuantity);
+        let actualQuantity =
+            Number(task.recommendedQuantity) || 0;
 
-        const sourceName = document.getElementById("source-name");
-        const sourceId = document.getElementById("source-id");
-        const targetName = document.getElementById("target-name");
-        const targetId = document.getElementById("target-id");
+        const sourceName =
+            document.getElementById("source-name");
+
+        const sourceId =
+            document.getElementById("source-id");
+
+        const targetName =
+            document.getElementById("target-name");
+
+        const targetId =
+            document.getElementById("target-id");
+
         const recommendedQuantity =
-            document.getElementById("recommended-quantity");
+            document.getElementById(
+                "recommended-quantity"
+            );
+
         const actualQuantityElement =
-            document.getElementById("actual-quantity");
-        const note = document.getElementById("note");
-        const noteError = document.getElementById("note-error");
+            document.getElementById(
+                "actual-quantity"
+            );
 
-        function renderTask() {
-            sourceName.textContent = task.sourceStationName;
-            sourceId.textContent = `站點編號：${task.sourceStationId}`;
+        const decreaseButton =
+            document.getElementById(
+                "decrease-button"
+            );
 
-            targetName.textContent = task.targetStationName;
-            targetId.textContent = `站點編號：${task.targetStationId}`;
+        const increaseButton =
+            document.getElementById(
+                "increase-button"
+            );
 
-            recommendedQuantity.textContent = task.recommendedQuantity;
-            actualQuantityElement.textContent = actualQuantity;
+        const reasonCheckboxes = Array.from(
+            document.querySelectorAll(
+                'input[name="reason"]'
+            )
+        );
+
+        const otherReasonCheckbox =
+            document.getElementById(
+                "other-reason-checkbox"
+            );
+
+        const otherReasonContainer =
+            document.getElementById(
+                "other-reason-container"
+            );
+
+        const otherReasonInput =
+            document.getElementById(
+                "other-reason-input"
+            );
+
+        const reasonError =
+            document.getElementById(
+                "reason-error"
+            );
+
+        function getMaximumQuantity() {
+            const maximum =
+                Number(task.maximumQuantity);
+
+            return Number.isFinite(maximum)
+                ? maximum
+                : 999;
         }
 
-        document
-            .getElementById("decrease-button")
-            .addEventListener("click", function () {
+        function renderTask() {
+            sourceName.textContent =
+                task.sourceStationName;
+
+            sourceId.textContent =
+                `站點編號：${task.sourceStationId}`;
+
+            targetName.textContent =
+                task.targetStationName;
+
+            targetId.textContent =
+                `站點編號：${task.targetStationId}`;
+
+            recommendedQuantity.textContent =
+                task.recommendedQuantity;
+
+            actualQuantityElement.textContent =
+                actualQuantity;
+
+            decreaseButton.disabled =
+                actualQuantity <= 0;
+
+            increaseButton.disabled =
+                actualQuantity >= getMaximumQuantity();
+        }
+
+        decreaseButton.addEventListener(
+            "click",
+            function () {
                 if (actualQuantity > 0) {
                     actualQuantity -= 1;
                     renderTask();
                 }
-            });
+            }
+        );
 
-        document
-            .getElementById("increase-button")
-            .addEventListener("click", function () {
-                const maximumQuantity =
-                    Number(task.maximumQuantity) || 999;
-
-                if (actualQuantity < maximumQuantity) {
+        increaseButton.addEventListener(
+            "click",
+            function () {
+                if (
+                    actualQuantity <
+                    getMaximumQuantity()
+                ) {
                     actualQuantity += 1;
                     renderTask();
                 }
-            });
+            }
+        );
+
+        otherReasonCheckbox.addEventListener(
+            "change",
+            function () {
+                if (this.checked) {
+                    otherReasonContainer.style.display =
+                        "block";
+
+                    otherReasonInput.focus();
+                } else {
+                    otherReasonContainer.style.display =
+                        "none";
+
+                    otherReasonInput.value = "";
+                }
+
+                reasonError.style.display = "none";
+            }
+        );
+
+        reasonCheckboxes.forEach(function (checkbox) {
+            checkbox.addEventListener(
+                "change",
+                function () {
+                    reasonError.style.display =
+                        "none";
+                }
+            );
+        });
 
         document
             .getElementById("submit-button")
-            .addEventListener("click", function () {
-                const recommended =
-                    Number(task.recommendedQuantity);
+            .addEventListener(
+                "click",
+                function () {
+                    const recommended =
+                        Number(
+                            task.recommendedQuantity
+                        );
 
-                if (
-                    actualQuantity !== recommended &&
-                    note.value.trim() === ""
-                ) {
-                    noteError.style.display = "block";
-                    note.focus();
-                    return;
+                    const selectedReasons =
+                        reasonCheckboxes
+                            .filter(
+                                function (checkbox) {
+                                    return checkbox.checked;
+                                }
+                            )
+                            .map(
+                                function (checkbox) {
+                                    return checkbox.value;
+                                }
+                            );
+
+                    if (
+                        actualQuantity !== recommended &&
+                        selectedReasons.length === 0
+                    ) {
+                        reasonError.textContent =
+                            "請至少選擇一個未依建議數量完成的原因。";
+
+                        reasonError.style.display =
+                            "block";
+
+                        return;
+                    }
+
+                    if (
+                        otherReasonCheckbox.checked &&
+                        otherReasonInput.value.trim() === ""
+                    ) {
+                        reasonError.textContent =
+                            "請填寫其他原因。";
+
+                        reasonError.style.display =
+                            "block";
+
+                        otherReasonInput.focus();
+                        return;
+                    }
+
+                    reasonError.style.display = "none";
+
+                    const completedReasons =
+                        selectedReasons.filter(
+                            function (reason) {
+                                return reason !== "其他";
+                            }
+                        );
+
+                    if (otherReasonCheckbox.checked) {
+                        completedReasons.push(
+                            `其他：${otherReasonInput.value.trim()}`
+                        );
+                    }
+
+                    const completedTask = {
+                        ...task,
+                        actualQuantity: actualQuantity,
+                        reasons: completedReasons,
+                        note: completedReasons.join("、"),
+                        status: "completed",
+                        completedAt:
+                            new Date().toISOString()
+                    };
+
+                    let oldRecords = [];
+
+                    try {
+                        oldRecords = JSON.parse(
+                            localStorage.getItem(
+                                "dispatchTaskRecords"
+                            ) || "[]"
+                        );
+                    } catch (error) {
+                        oldRecords = [];
+                    }
+
+                    oldRecords.push(completedTask);
+
+                    localStorage.setItem(
+                        "dispatchTaskRecords",
+                        JSON.stringify(oldRecords)
+                    );
+
+                    localStorage.removeItem(
+                        "activeDispatchTask"
+                    );
+
+                    document.getElementById(
+                        "task-form"
+                    ).style.display = "none";
+
+                    document.getElementById(
+                        "success-page"
+                    ).style.display = "block";
+
+                    document.getElementById(
+                        "success-message"
+                    ).textContent =
+                        `實際調度 ${actualQuantity} 輛，完成時間與原因已記錄。`;
                 }
-
-                noteError.style.display = "none";
-
-                const completedTask = {
-                    ...task,
-                    actualQuantity: actualQuantity,
-                    note: note.value.trim(),
-                    status: "completed",
-                    completedAt: new Date().toISOString()
-                };
-
-                const oldRecords = JSON.parse(
-                    localStorage.getItem("dispatchTaskRecords") || "[]"
-                );
-
-                oldRecords.push(completedTask);
-
-                localStorage.setItem(
-                    "dispatchTaskRecords",
-                    JSON.stringify(oldRecords)
-                );
-
-                localStorage.removeItem("activeDispatchTask");
-
-                document.getElementById("task-form").style.display = "none";
-                document.getElementById("success-page").style.display = "block";
-
-                document.getElementById("success-message").textContent =
-                    `實際調度 ${actualQuantity} 輛，完成時間已記錄。`;
-            });
+            );
 
         renderTask();
     </script>
