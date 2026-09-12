@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>工作人員任務｜YouBike 調度預測系統</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="enhancements.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+  <nav>
+    <div class="brand"><span class="brand-logo-wrap"><img class="brand-logo" src="assets/youbike-logo.png" alt="YouBike"></span><div class="brand-copy"><div class="logo">外勤調度工作台</div><small>FIELD OPERATIONS</small></div></div>
+    <div class="subnav" id="identity"></div>
+    <button class="signout" id="signout">登出</button>
+  </nav>
+  <main class="page">
+    <header class="staff-hero">
+      <div><p class="eyebrow">今日調度任務</p><h1 class="page-title" id="welcome">工作人員工作台</h1><p class="muted" id="scope">正在載入負責範圍…</p></div>
+      <div class="shift"><span class="live-dot"></span><div><small>目前班別</small><b>09:00–18:00</b></div></div>
+    </header>
+    <section class="staff-notice" id="taskNotice" aria-live="polite">
+      <span class="notice-bell">●</span><div><b id="noticeTitle">正在確認新任務…</b><p id="noticeText">系統會把新派工放在最前面。</p></div>
+    </section>
+    <section class="stats staff-stats">
+      <div class="stat warning"><small>缺車站點</small><b id="shortageCount">–</b></div>
+      <div class="stat danger"><small>滿站站點</small><b id="fullCount">–</b></div>
+      <div class="stat progress"><small>待辦／進行中</small><b id="todoCount">–</b></div>
+      <div class="stat complete"><small>今日已完成</small><b id="doneCount">–</b></div>
+    </section>
+    <section class="staff-grid">
+      <div class="panel section"><h2>最快調度路線</h2><div class="map-legend"><span><i class="dot shortage-dot"></i>缺車（低於 30%）</span><span><i class="dot full-dot"></i>滿站（高於 70%）</span><span><i class="dot safe-dot"></i>安全</span></div><div class="route-summary" id="routeSummary">選擇任務後顯示建議路線與預估車程。</div><div id="staffMap"></div><div class="algorithm-demo"><div class="algorithm-title"><b>最佳路徑演算示意</b><small>正式版由 Google Routes API 提供即時道路時間</small></div><div class="algorithm-flow"><div><i>1</i><b>任務資料</b><span>起訖站與建議量</span></div><em>→</em><div><i>2</i><b>優先分數</b><span>缺滿站嚴重度</span></div><em>→</em><div><i>3</i><b>交通成本</b><span>距離、路況、車程</span></div><em>→</em><div class="algorithm-result"><i>4</i><b>最佳順序</b><span id="algorithmResult">等待任務資料</span></div></div><p class="algorithm-formula">綜合成本＝預估車程 × 交通係數 − 嚴重度權重；成本最低且問題最急迫的任務優先。</p></div></div>
+      <div class="panel section"><h2>我的任務</h2><div class="task-tabs" role="tablist"><button class="task-tab active" data-task-group="unfinished">未完成 <span id="unfinishedCount">0</span></button><button class="task-tab" data-task-group="completed">已完成 <span id="completedCount">0</span></button></div><div class="task-toolbar"><b>最嚴重優先</b><span>像接單一樣，一次看清任務重點</span></div><p class="task-rule" id="taskRule"></p><div class="task-list" id="taskList"></div><div class="pagination"><button id="previousPage">上一頁</button><span id="pageInfo"></span><button id="nextPage">下一頁</button></div></div>
+    </section>
+    <section class="panel section"><h2>責任區站點狀態</h2><p class="section-note">安全水位為總車位的 30–70%。站點仍依偏離安全水位的程度排列，最需要處理的站點置頂。</p><div class="table-wrap"><table><thead><tr><th>行政區／站點</th><th>現有車輛／空位</th><th>30 分鐘（可借率）</th><th>60 分鐘（可借率）</th><th>燈號</th><th>建議調度</th></tr></thead><tbody id="stationRows"></tbody></table></div></section>
+  </main>
+  <dialog id="completeDialog" class="task-dialog">
+    <form method="dialog" id="completeForm"><div class="dialog-head"><div><p class="eyebrow">任務完成回報</p><h2 id="dialogRoute">調度任務</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="關閉">×</button></div><div class="route-box"><div><small>起點站</small><b id="dialogOrigin"></b></div><span>→</span><div><small>目的站</small><b id="dialogDestination"></b></div></div><div class="suggestion">系統建議調度 <strong id="dialogSuggested">0</strong> 台</div><label>實際調度數量</label><div class="quantity"><button type="button" id="decrease" aria-label="減少一台">−</button><output id="actualCount">0</output><button type="button" id="increase" aria-label="增加一台">＋</button></div><fieldset class="reason-options"><legend>數量不同或無法完成的原因</legend><label><input type="checkbox" name="reason" value="運輸車容量不足"><span>運輸車容量不足</span></label><label><input type="checkbox" name="reason" value="現場車輛數量已改變"><span>現場車輛數量已改變</span></label><label><input type="checkbox" name="reason" value="部分車輛故障"><span>部分車輛故障</span></label><label><input type="checkbox" name="reason" value="目的站剩餘車位不足"><span>目的站剩餘車位不足</span></label><label><input type="checkbox" name="reason" value="交通或道路狀況影響"><span>交通或道路狀況影響</span></label><label><input type="checkbox" name="reason" value="其他"><span>其他</span></label></fieldset><p class="reason-hint">實際數量與系統建議不同時，至少需要勾選一個原因。</p><textarea id="note" rows="3" placeholder="需要時補充現場情況"></textarea><p class="error" id="completeError"></p><div class="dialog-actions"><button type="button" data-close-dialog class="secondary">取消</button><button type="submit" class="primary compact">確認完成</button></div></form>
+  </dialog>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="staff.js"></script>
+</body>
+</html>

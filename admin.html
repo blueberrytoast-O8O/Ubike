@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>管理員總覽｜YouBike 調度預測系統</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="enhancements.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+  <nav><div class="brand"><span class="brand-logo-wrap"><img class="brand-logo" src="assets/youbike-logo.png" alt="YouBike"></span><div class="brand-copy"><div class="logo">調度預測系統</div><small>NEW TAIPEI DISPATCH</small></div></div><div class="subnav" id="identity"></div><button class="signout" id="signout">登出</button></nav>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="管理員快速選單">
+      <div class="sidebar-title">快速選單</div>
+      <a href="#overview" class="active">全市總覽</a>
+      <a href="#dispatch">快速派工</a>
+      <a href="#districts">行政區分工</a>
+      <a href="#cityMap">風險地圖</a>
+      <a href="#reports">人員回報</a>
+      <a href="#tasks">全部任務</a>
+    </aside>
+    <main class="page admin-page">
+      <section id="overview">
+        <div class="dashboard-head"><div><h1 class="page-title">新北市調度管理總覽</h1><p class="muted">掌握全市 29 個行政區的站點問題、負責人員與任務進度</p></div><div class="filter"><label for="district">行政區篩選</label><select id="district"><option>全部行政區</option></select></div></div>
+        <div class="stats"><div class="stat city"><small>涵蓋行政區</small><b id="districtCount">–</b></div><div class="stat warning"><small>缺車站點</small><b id="shortageCount">–</b></div><div class="stat danger"><small>滿站站點</small><b id="fullCount">–</b></div><div class="stat progress"><small>待接收／進行中</small><b id="activeCount">–</b></div><div class="stat complete"><small>已完成任務</small><b id="doneCount">–</b></div></div>
+      </section>
+
+      <section id="dispatch" class="panel section dispatch-section">
+        <h2>快速派工</h2>
+        <p class="section-note">選擇行政區後，系統自動帶入該區負責人；送出後，工作人員會在工作台收到待接收通知。</p>
+        <form id="dispatchForm" class="dispatch-form">
+          <label>行政區<select id="dispatchDistrict" required><option value="">請選擇</option></select></label>
+          <label>負責人員<input id="dispatchWorker" readonly placeholder="依行政區自動帶入"></label>
+          <label>起點站<select id="dispatchOrigin" required><option value="">請先選行政區</option></select></label>
+          <label>目的站<select id="dispatchDestination" required><option value="">請先選行政區</option></select></label>
+          <label>建議數量<input id="dispatchAmount" type="number" min="1" value="5" required></label>
+          <button class="primary compact" type="submit">確認派工</button>
+        </form>
+        <p id="dispatchMessage" class="dispatch-message" aria-live="polite"></p>
+      </section>
+
+      <section id="districts" class="panel section city-section"><h2>行政區問題與人員分工</h2><p class="section-note">每個行政區都有固定負責人；橘色數字表示缺車，紅色數字表示滿站。</p><div class="table-wrap"><table><thead><tr><th>行政區</th><th>責任分區</th><th>負責人員</th><th>站點數</th><th>缺車</th><th>滿站</th><th>待接收</th><th>進行中</th><th>已完成</th></tr></thead><tbody id="districtRows"></tbody></table></div></section>
+      <section class="grid"><div id="cityMap" class="panel section"><h2>全市風險站點地圖</h2><div id="map"></div></div><div id="reports" class="panel section"><h2>工作人員回報</h2><div class="report" id="reportsList"></div></div></section>
+      <section id="tasks" class="panel section"><h2>調度任務清單</h2><div class="table-wrap"><table><thead><tr><th>行政區</th><th>負責人員</th><th>調度路線</th><th>建議數量</th><th>實際數量</th><th>任務狀態</th><th>回報</th></tr></thead><tbody id="taskRows"></tbody></table></div></section>
+    </main>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="admin.js"></script>
+</body>
+</html>

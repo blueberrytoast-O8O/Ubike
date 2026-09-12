@@ -1,0 +1,9 @@
+{
+  "name": "ntpc-youbike-dispatch-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "sync:stations": "node import_ntpc_stations.mjs"
+  }
+}
