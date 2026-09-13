@@ -31,7 +31,7 @@
         <p class="section-note">選擇行政區後，系統自動帶入該區負責人；送出後，工作人員會在工作台收到待接收通知。</p>
         <form id="dispatchForm" class="dispatch-form">
           <label>行政區<select id="dispatchDistrict" required><option value="">請選擇</option></select></label>
-          <label>負責人員<input id="dispatchWorker" readonly placeholder="依行政區自動帶入"></label>
+          <label>負責人員<select id="dispatchWorker" required><option value="">請先選行政區</option></select></label>
           <label>起點站<select id="dispatchOrigin" required><option value="">請先選行政區</option></select></label>
           <label>目的站<select id="dispatchDestination" required><option value="">請先選行政區</option></select></label>
           <label>建議數量<input id="dispatchAmount" type="number" min="1" value="5" required></label>

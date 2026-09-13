@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node server.js",
-    "sync:stations": "node import_ntpc_stations.mjs"
+    "start": "node --experimental-sqlite server.js",
+    "sync:stations": "node import_ntpc_stations.mjs",
+    "test:smoke": "node --experimental-sqlite tests/node-smoke.cjs",
+    "test:integration": "node --experimental-sqlite tests/node-integration-smoke.cjs"
   }
 }
