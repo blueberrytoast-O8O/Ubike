@@ -1,0 +1,24 @@
+{
+  "provenance": "team_configurable_default",
+  "default_vehicle_capacity": 14,
+  "max_candidate_plans": 10,
+  "max_route_steps": 30,
+  "max_task_minutes": 120,
+  "estimated_speed_kmh": 20,
+  "service_minutes_per_stop": 3,
+  "service_minutes_per_bike": 0.25,
+  "duration_priority_cap_minutes": 120,
+  "weights": {
+    "critical": 40,
+    "warning": 10,
+    "duration_minute": 0.1,
+    "realtime": 10,
+    "forecast_30m": 6,
+    "forecast_60m": 3,
+    "quantity": 1,
+    "load_fit": 12,
+    "distance_km": 8,
+    "travel_minute": 2
+  },
+  "notes": "Team defaults, not official. Greedy coordinated vehicle routes, not globally optimal. One candidate per available vehicle, sorted by ID; shared stock reservations across candidates. Hard time cutoff, no mandatory depot return. now is assumed publication/start time; delayed publication requires recalculation. Positive net step score required. Forecast-only alerts do not bypass present inventory limits."
+}

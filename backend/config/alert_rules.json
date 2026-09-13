@@ -1,0 +1,7 @@
+{
+  "provenance": "team_configurable_default",
+  "sources": ["home.html:373-385: bikes >70% red, <30% orange", "orange.html:603-606: same display thresholds", "orange.html:794: 30% bike reserve", "Downloaded legacy backend uses 20/80 instead; not authoritative"],
+  "notes": "Not official operating policy. Critical severity and recovery hysteresis are team defaults. Immediate activation; duration is elapsed execution time since first detection. Forecast docks are estimated, not reported availability.",
+  "low_bikes": {"trigger_below_ratio": 0.30, "critical_at_or_below_ratio": 0.10, "resolve_at_or_above_ratio": 0.35},
+  "low_docks": {"trigger_below_ratio": 0.30, "critical_at_or_below_ratio": 0.10, "resolve_at_or_above_ratio": 0.35}
+}

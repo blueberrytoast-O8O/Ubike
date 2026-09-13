@@ -1,0 +1,13 @@
+observed_at,official_station_id,station_name,district,total_slots,available_bikes,available_docks,latitude,longitude
+2026-09-12T14:30:29Z,001,Good,Test,20,5,15,25.1,121.5
+2026-09-12T22:30:29+08:00,002,Invalid,Test,20,oops,15,25,121
+2026-09-12T22:30:29+08:00,003,Missing,Test,20,,15,25,121
+2026-09-12T22:30:29+08:00,004,Negative,Test,20,-1,15,25,121
+2026-09-12T22:30:29+08:00,005,Overflow,Test,20,21,0,25,121
+2026-09-12T22:30:29+08:00,006,MissingDock,Test,20,5,,25,121
+2026-09-12T22:30:29+08:00,007,Fraction,Test,20,1.5,15,25,121
+bad,008,BadTime,Test,20,5,15,25,121
+2026-09-12T22:30:29+08:00,009,BadCoords,Test,20,5,15,NaN,181
+2026-09-12T22:31:00+08:00,001,Newest,Test,20,6,14,25,121
+2026-09-12T22:00:00+08:00,001,Older,Test,20,7,13,25,121
+2026-09-12T22:31:00+08:00,001,LastTie,Test,20,8,12,25,121
